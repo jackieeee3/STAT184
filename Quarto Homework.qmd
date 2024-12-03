@@ -1,0 +1,222 @@
+---
+title: "Quarto Homework"
+subtitle: "STAT 184"
+author: Jackie Yang
+date: today
+format: html
+editor: visual
+self-contained: true
+theme:
+  dark: darkly
+---
+
+Please answer each of the following three questions in a single Quarto document, which you will render to a `.html` file for submission to Canvas before the due date.
+
+The `.html` file that you submit needs to have: a title; a subtitle; your name in the author field; the date in the date field; and headers separating each question within your document.
+
+You must set `self-contained: true` in the YAML header!
+
+You may find this Quarto guide useful:  https://quarto.org/docs/authoring/markdown-basics.html
+
+
+```{r libraries}
+#| warning: false
+## dependencies
+library(ggplot2)
+library(dplyr)
+```
+
+## Question 1
+
+Your task for this question is to simply plot the below function and include the plot in your submission document. The code for the plot is already provided for you. You need not do any additional coding to create this plot. 
+
+**Set the options in your code chunk in such a way that only the plot will appear in your rendered document (i.e., the code used to make the plot should not appear).**
+
+Consider the function $h(x) = [cos(4x) + tan(0.5x)]^4$.
+
+Plot $h(x)$ over $x \in [0, 1]$.
+
+```{r Question 1}
+#| echo: false
+
+myFunction <- function(x){
+  y <- (cos(4*x) + tan(0.5*x))^4
+  return(y)
+}
+
+ggplot() +
+  stat_function(
+    fun = myFunction,
+    xlim = c(0, 1),
+    n = 1000
+  ) +
+  theme_bw() +
+  labs(
+    x = "x",
+    y = "h(x)"
+  )
+```
+
+## Question 2
+
+For this question, you are to recreate a plot (any plot of your choice) that you have previously made and submitted for this class.
+
+You will copy and paste the code you have already written into a code chunk within your Quarto document.
+
+Set the options in your code chunk such that both the code and the output (your plot) are included in your document.
+
+```{r Question 2}
+#| echo: true
+
+box_length = 11
+
+box_width = 8.5
+
+x = seq(from = 0, to = 4.25, by = 0.01)
+
+### The cutout length is the same as the height when the box is folded
+cutout_length = box_height = x
+
+new_box_length = box_length - (2 * x)
+
+new_box_width = box_width - (2 * x)
+
+volume = new_box_length * new_box_width * box_height
+
+plot(cutout_length, volume, xlab = "Cutout Length", ylab = "Volume", pch = 20)
+
+### Finding the max (x, y)
+max_y <- max(volume)
+max_x <- cutout_length[which(volume == max_y)]
+
+cat("Max point: (", max_x, ",", max_y, ")")
+```
+
+## Question 3
+
+The data set for this question contains records of tortilla prices in México from 2007 to 2024.^[Rick Chavelas via Kaggle at https://www.kaggle.com/datasets/richave/tortilla-prices-in-mexico] The prices are per kilogram and in Mexican pesos.
+
+The data have been subsetted to include only the six states that border the United States; namely,
+
+- Baja California
+- Sonora
+- Chihuahua
+- Coahuila
+- Nuevo León
+- Tanaulipas
+
+These (subsetted) data are contained within the file `tortilla_dat.csv`, which has been provided for you.
+
+Requirements:
+
+1. You must download and read in the data directly from the file. Recall that there is a specific way you need to do this so that `R` and Quarto know where the file can be found.
+2. Include at least one comment within each code chunk explaining why it was included.
+3. Set the options for each code chunk such that, for each plot/output, both your code and the output are included within your rendered document.
+4. Clearly label your work for each of the following tasks in your document.
+
+```{r tortilla_dataset}
+#| results: hide
+read.csv(file = 'tortilla_data.csv')
+tortillas <- read.csv(file = 'tortilla_data.csv')
+```
+
+## Your tasks.
+
+**(a).** For the year 2007, find the average price of tortillas across all of these states together.
+
+```{r Question 3a}
+#| echo: true
+
+## Filter the data set by the year 2007 and find the average using summarize
+average_2007 <- tortillas %>%
+  filter(year == 2007) %>%
+  summarize(average_price = mean(price, na.rm = TRUE))
+print(average_2007)
+```
+
+**(b).** For the year 2024, find the average price of tortillas across all of these 6 states together
+
+```{r Question 3b}
+#| echo: true
+
+## Filter the data set by the year 2024 and find the average using summarize
+average_2024 <- tortillas %>%
+  filter(year == 2024) %>%
+  summarize(average_price = mean(price, na.rm = TRUE))
+print(average_2024)
+```
+
+**(c).** Find the percent change in the average price of tortillas across all six states together from the year 2007 to 2024. 
+
+```{r Question 3c}
+#| echo: true
+
+## Calculate percentage change by dividing the average of 2024 by the average of 2007. Then, multiply by 100 to obtain a percentage.
+percent_change <- ((average_2024 - average_2007) / average_2007) * 100
+print(percent_change)
+```
+
+**(d).** Make a plot that shows the average price of tortillas (across all six states together) each year from the years 2007 to 2024. Add an appropriate **title** for this figure using Quarto.
+
+```{r Question 3d}
+#| echo: true
+
+## Filter the data set by the years 2007 to 2024. Then, group by year and find the average price for each year
+filtered_tortillas <- tortillas %>%
+  filter(year >= 2007 & year <= 2024) %>%
+  group_by(year) %>%
+  summarize(average_price = mean(price, na.rm = TRUE))
+
+## Plot the average price for each year with year on the x-axis and average price on the y-axis
+ggplot(filtered_tortillas, aes(x = year, y = average_price)) + geom_point(size = 2) + geom_line() + labs(title = 'Average Price of Tortillas (2007-2024)', x = 'Year', y = 'Price')
+```
+
+**(e).** For the year 2016, provide summary statistics for each of the six states' price of tortillas. Make a table of the average price of tortillas in each state in 2016. Add a **title** for this table using Quarto. Also make side-by-side boxplots for each state in 2016. Add an appropriate **title and caption** for this figure using Quarto.
+
+```{r Question 3e}
+#| echo: true
+#| tbl-cap: Average Price of Tortilla in Each State
+
+## Filter the data set by the year 2016. Then, group by state and find the average for each state
+average_2016 <- tortillas %>%
+  filter(year == 2016) %>%
+  group_by(state) %>%
+  summarize(average_price = mean(price, na.rm = TRUE))
+print(average_2016)
+
+## Plot the data for tortillas for the year 2016 using box plots with state on the x-axis and price on the y-axis
+ggplot(tortillas %>% filter(year == 2016), aes(x = state, y = price)) + geom_boxplot() + labs(title = "Price of Tortillas by State in 2016", x = "State", y = "Price", caption = "These are side-by-side boxplots of tortilla prices for each state in 2016")
+```
+
+| State           | Average Price |
+|-----------------|---------------|
+| Baja California | 13.85         |
+| Chihuahua       | 13.14         |
+| Coahuila        | 11.72         |
+| Nuevo León      | 12.13         |
+| Sonora          | 13.54         |
+| Tamaulipas      | 13.30         |
+
+: Average Tortilla Price in Each State
+
+**(f).** For the state of Nuevo León, make an overlapping plot of the price of tortillas each year from 2007 to 2024 based on store type (i.e., small businesses vs. large corporations). Comment on your findings. Add an appropriate **title and caption** for this figure using Quarto.
+
+```{r Question 3f}
+#| echo: true
+
+## Sort the tortilla data set by state where it equals NuevoLeon from the year 2007 to 2024
+nuevo_leon <- tortillas %>%
+  filter(state == "NuevoLeon", year >= 2007 & year <= 2024)
+
+## Graph the newly filtered data set with year on the x-axis and price on the y-axis with the store type in different colors
+ggplot(nuevo_leon, aes(x = year, y = price, color = storeType)) + geom_point() + geom_line() + labs(title = "Price of Tortilla in Nuevo León in (2007-2024)", x = "Year", y = "Price", caption = "Price of Tortillas in Nuevo León by Store Type: Small Businesses vs. Large Corporations", color = "Store Type")
+```
+From the graph, tortillas from small businesses were always more expensive than large corporations. Also, tortillas from small businesses seem to increase in price more rapidly than large corporations.
+
+**(g).** Include a picture of a tortilla. Add a caption in which you cite the source from which the picture originated.
+
+![https://stock.adobe.com/search?k=flour+tortilla](tortilla.png)
+
+**(h).** Somewhere in your work, include a footnote citing the source of this data, with a link to the Kaggle site from which this data set was downloaded (as provided below in a similar footnote).
+
+
